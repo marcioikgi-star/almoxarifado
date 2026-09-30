@@ -8,6 +8,7 @@ import { registrarMovimentacao } from "@/lib/estoque";
 import { ErroEstoque } from "@/lib/calculo";
 import { lerNumero } from "@/lib/formato";
 import { exigirUsuario } from "@/lib/auth";
+import { GRUPOS_UNIDADE, normalizarSigla } from "@/lib/unidades";
 
 export type EstadoForm = { erro?: string; ok?: string } | undefined;
 
@@ -27,7 +28,7 @@ function dadosItem(f: FormData) {
       codigo: codigo.toUpperCase(),
       descricao,
       categoria: texto(f, "categoria"),
-      unidade: texto(f, "unidade") ?? "un",
+      unidade: texto(f, "unidade") ?? "UN",
       codigoBarras: texto(f, "codigoBarras"),
       fabricante: texto(f, "fabricante"),
       referencia: texto(f, "referencia"),
@@ -40,6 +41,9 @@ function dadosItem(f: FormData) {
 function erroUnico(e: unknown) {
   if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
     return "Já existe um item com esse código ou código de barras.";
+  }
+  if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2003") {
+    return "Escolha uma unidade de medida da lista.";
   }
   throw e;
 }
@@ -134,4 +138,58 @@ export async function alternarProjeto(id: string, ativo: boolean) {
   await exigirUsuario();
   await db.projeto.update({ where: { id }, data: { ativo } });
   revalidatePath("/cadastros");
+}
+
+function dadosUnidade(f: FormData) {
+  const sigla = texto(f, "sigla");
+  const nome = texto(f, "nome");
+  if (!sigla || !nome) return { erro: "Informe a sigla e o nome da unidade." } as const;
+  const grupo = texto(f, "grupo");
+  return {
+    dados: {
+      sigla: normalizarSigla(sigla),
+      nome,
+      grupo: grupo && (GRUPOS_UNIDADE as readonly string[]).includes(grupo) ? grupo : "Outras",
+    },
+  } as const;
+}
+
+function erroUnidade(e: unknown, sigla: string) {
+  if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+    return `Já existe uma unidade com a sigla ${sigla}.`;
+  }
+  throw e;
+}
+
+export async function criarUnidade(_: EstadoForm, f: FormData): Promise<EstadoForm> {
+  await exigirUsuario();
+  const r = dadosUnidade(f);
+  if ("erro" in r) return { erro: r.erro };
+  try {
+    await db.unidadeMedida.create({ data: r.dados });
+  } catch (e) {
+    return { erro: erroUnidade(e, r.dados.sigla) };
+  }
+  revalidatePath("/unidades");
+  return { ok: `Unidade ${r.dados.sigla} (${r.dados.nome}) cadastrada.` };
+}
+
+// Mudar a sigla atualiza todos os itens que usam a unidade (ON UPDATE CASCADE no banco).
+export async function editarUnidade(id: string, _: EstadoForm, f: FormData): Promise<EstadoForm> {
+  await exigirUsuario();
+  const r = dadosUnidade(f);
+  if ("erro" in r) return { erro: r.erro };
+  try {
+    await db.unidadeMedida.update({ where: { id }, data: r.dados });
+  } catch (e) {
+    return { erro: erroUnidade(e, r.dados.sigla) };
+  }
+  revalidatePath("/", "layout");
+  return { ok: "Alterações salvas." };
+}
+
+export async function alternarUnidade(id: string, ativo: boolean) {
+  await exigirUsuario();
+  await db.unidadeMedida.update({ where: { id }, data: { ativo } });
+  revalidatePath("/unidades");
 }

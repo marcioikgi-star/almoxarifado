@@ -52,6 +52,10 @@ Ficam em `src/lib/calculo.ts` e são aplicadas numa transação em `src/lib/esto
 - Senha provisória (novo usuário ou redefinida) precisa ser trocada no primeiro acesso. Trocar a senha encerra as outras sessões.
 - Cada movimentação registra quem lançou.
 
+## Unidades de medida
+
+O sistema já vem com a lista de unidades usadas em almoxarifado (UN, PC, PAR, JG, CJ, KIT, CX, PCT, SC, RL, BR, CH, M, M2, M3, L, KG, H, VB e outras), agrupadas por tipo. Em **Cadastros › Unidades de medida** dá para adicionar, renomear e desativar. O cadastro de itens só aceita unidades dessa lista. Mudar a sigla de uma unidade atualiza os itens que a usam; desativar só tira a unidade da lista de escolha.
+
 ## Etiquetas QR
 
 Cada etiqueta grava o endereço `/c/CODIGO` do item. Lida pela câmera do celular, abre o item direto no navegador. Lida pelo leitor do app durante uma entrada ou saída, volta direto ao formulário. Códigos de barras de fabricante também são aceitos pelo campo "Código de barras" do item.

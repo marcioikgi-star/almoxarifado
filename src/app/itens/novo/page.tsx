@@ -3,15 +3,16 @@ import { criarItem } from "@/app/actions";
 import { CamposItem } from "@/components/CamposItem";
 import { FormAcao } from "@/components/FormAcao";
 import { Titulo } from "@/components/ui";
+import { listarUnidadesAtivas } from "@/lib/consultas";
 
 export default async function NovoItem({ searchParams }: PageProps<"/itens/novo">) {
   await exigirUsuario();
-  const { codigoBarras } = await searchParams;
+  const [{ codigoBarras }, unidades] = await Promise.all([searchParams, listarUnidadesAtivas()]);
   return (
     <div>
       <Titulo voltar="/itens">Novo item</Titulo>
       <FormAcao action={criarItem} enviar="Cadastrar item">
-        <CamposItem padrao={{ codigoBarras: typeof codigoBarras === "string" ? codigoBarras : "" }} />
+        <CamposItem unidades={unidades} padrao={{ codigoBarras: typeof codigoBarras === "string" ? codigoBarras : "" }} />
       </FormAcao>
     </div>
   );

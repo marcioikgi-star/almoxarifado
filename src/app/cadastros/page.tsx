@@ -14,11 +14,16 @@ export default async function Cadastros() {
 
   return (
     <div className="space-y-8">
-      {usuario.papel === "ADMIN" && (
-        <Link href="/usuarios" className="block rounded-xl border border-slate-300 bg-white px-4 py-3 font-semibold">
-          Usuários e acessos ›
+      <div className="space-y-3">
+        <Link href="/unidades" className="block rounded-xl border border-slate-300 bg-white px-4 py-3 font-semibold">
+          Unidades de medida ›
         </Link>
-      )}
+        {usuario.papel === "ADMIN" && (
+          <Link href="/usuarios" className="block rounded-xl border border-slate-300 bg-white px-4 py-3 font-semibold">
+            Usuários e acessos ›
+          </Link>
+        )}
+      </div>
       <section>
         <Titulo>Projetos e obras</Titulo>
         <Cartao className="mb-3">

@@ -54,7 +54,9 @@ model Item {
   codigo        String   @unique
   descricao     String
   categoria     String?
-  unidade       String   @default("un")
+  // Sigla da unidade de medida (ver UnidadeMedida). Mudar a sigla lá atualiza os itens.
+  unidade       String   @default("UN")
+  unidadeMedida UnidadeMedida @relation(fields: [unidade], references: [sigla], onUpdate: Cascade)
   codigoBarras  String?  @unique
   fabricante    String?
   referencia    String?
@@ -70,6 +72,18 @@ model Item {
   movimentacoes Movimentacao[]
 
   @@index([descricao])
+}
+
+model UnidadeMedida {
+  id       String   @id @default(cuid())
+  sigla    String   @unique
+  nome     String
+  // Agrupa a lista no cadastro de itens: Contagem, Comprimento, Área, Volume, Massa, Tempo e serviço, Outras.
+  grupo    String   @default("Outras")
+  ativo    Boolean  @default(true)
+  criadoEm DateTime @default(now())
+
+  itens Item[]
 }
 
 model Fornecedor {

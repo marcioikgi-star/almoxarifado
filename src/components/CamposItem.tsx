@@ -1,30 +1,38 @@
-import type { Item } from "@prisma/client";
-import { Campo } from "./ui";
+import Link from "next/link";
+import type { Item, UnidadeMedida } from "@prisma/client";
+import { agruparUnidades } from "@/lib/unidades";
+import { Campo, Selecao } from "./ui";
 
-const UNIDADES = ["un", "pç", "m", "m²", "m³", "kg", "L", "cx", "rolo", "barra", "chapa", "par", "jg"];
+type Props = {
+  item?: Item | null;
+  padrao?: Partial<Record<string, string>>;
+  unidades: Pick<UnidadeMedida, "sigla" | "nome" | "grupo">[];
+};
 
-export function CamposItem({ item, padrao }: { item?: Item | null; padrao?: Partial<Record<string, string>> }) {
+export function CamposItem({ item, padrao, unidades }: Props) {
   const v = (k: keyof Item) => (item?.[k] != null ? String(item[k]) : (padrao?.[k] ?? ""));
   return (
     <>
       <div className="grid grid-cols-2 gap-3">
         <Campo rotulo="Código interno *" name="codigo" required defaultValue={v("codigo")} autoCapitalize="characters" />
-        <label className="block">
-          <span className="mb-1 block text-sm font-medium text-slate-700">Unidade *</span>
-          <input
-            name="unidade"
-            list="unidades"
-            required
-            defaultValue={v("unidade") || "un"}
-            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-base"
-          />
-          <datalist id="unidades">
-            {UNIDADES.map((u) => (
-              <option key={u} value={u} />
-            ))}
-          </datalist>
-        </label>
+        <Selecao rotulo="Unidade *" name="unidade" required defaultValue={v("unidade") || "UN"}>
+          {agruparUnidades(unidades).map(([grupo, us]) => (
+            <optgroup key={grupo} label={grupo}>
+              {us.map((u) => (
+                <option key={u.sigla} value={u.sigla}>
+                  {u.sigla} · {u.nome}
+                </option>
+              ))}
+            </optgroup>
+          ))}
+        </Selecao>
       </div>
+      <p className="-mt-2 text-xs text-slate-500">
+        Não achou a unidade?{" "}
+        <Link href="/unidades" className="underline">
+          Cadastre em Unidades de medida
+        </Link>
+      </p>
       <Campo rotulo="Descrição *" name="descricao" required defaultValue={v("descricao")} />
       <div className="grid grid-cols-2 gap-3">
         <Campo rotulo="Categoria" name="categoria" defaultValue={v("categoria")} />

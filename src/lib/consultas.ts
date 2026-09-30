@@ -26,3 +26,11 @@ export function itensAbaixoDoMinimo(take?: number) {
     take,
   });
 }
+
+/** Unidades ativas, mais a que o item já usa (mesmo se tiver sido desativada). */
+export function listarUnidadesAtivas(incluirSigla?: string) {
+  return db.unidadeMedida.findMany({
+    where: incluirSigla ? { OR: [{ ativo: true }, { sigla: incluirSigla }] } : { ativo: true },
+    orderBy: { criadoEm: "asc" },
+  });
+}
