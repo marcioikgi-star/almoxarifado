@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TipoMovimentacao {
+  ENTRADA
+  SAIDA
+  AJUSTE
+  DEVOLUCAO
+}
+
+model Item {
+  id            String   @id @default(cuid())
+  codigo        String   @unique
+  descricao     String
+  categoria     String?
+  unidade       String   @default("un")
+  codigoBarras  String?  @unique
+  fabricante    String?
+  referencia    String?
+  localizacao   String?
+  estoqueMinimo Decimal  @default(0) @db.Decimal(14, 3)
+  // Saldo e custo médio são mantidos a cada movimentação (ver src/lib/estoque.ts).
+  saldo         Decimal  @default(0) @db.Decimal(14, 3)
+  custoMedio    Decimal  @default(0) @db.Decimal(14, 4)
+  ativo         Boolean  @default(true)
+  criadoEm      DateTime @default(now())
+  atualizadoEm  DateTime @updatedAt
+
+  movimentacoes Movimentacao[]
+
+  @@index([descricao])
+}
+
+model Fornecedor {
+  id       String   @id @default(cuid())
+  nome     String
+  cnpj     String?  @unique
+  contato  String?
+  criadoEm DateTime @default(now())
+
+  movimentacoes Movimentacao[]
+}
+
+model Projeto {
+  id       String   @id @default(cuid())
+  nome     String
+  cliente  String?
+  ativo    Boolean  @default(true)
+  criadoEm DateTime @default(now())
+
+  movimentacoes Movimentacao[]
+}
+
+model Movimentacao {
+  id            String           @id @default(cuid())
+  tipo          TipoMovimentacao
+  itemId        String
+  item          Item             @relation(fields: [itemId], references: [id])
+  // Variação aplicada ao saldo: positiva em entradas e devoluções, negativa em saídas;
+  // em ajustes, a diferença entre o saldo contado e o anterior.
+  quantidade    Decimal          @db.Decimal(14, 3)
+  custoUnitario Decimal          @db.Decimal(14, 4)
+  saldoApos     Decimal          @db.Decimal(14, 3)
+  fornecedorId  String?
+  fornecedor    Fornecedor?      @relation(fields: [fornecedorId], references: [id])
+  projetoId     String?
+  projeto       Projeto?         @relation(fields: [projetoId], references: [id])
+  documento     String?
+  responsavel   String?
+  observacao    String?
+  criadoEm      DateTime         @default(now())
+
+  @@index([itemId, criadoEm])
+  @@index([projetoId])
+}
