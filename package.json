@@ -10,7 +10,8 @@
     "test": "node --import tsx --test test/*.test.ts",
     "postinstall": "prisma generate",
     "seed": "tsx prisma/seed.ts",
-    "criar-admin": "tsx prisma/criar-admin.ts"
+    "criar-admin": "tsx prisma/criar-admin.ts",
+    "vercel-build": "prisma migrate deploy && tsx prisma/criar-admin.ts --inicial && next build"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

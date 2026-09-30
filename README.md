@@ -21,6 +21,13 @@ O `criar-admin` grava só o hash da senha e marca como provisória: no primeiro 
 
 A câmera do leitor de QR só funciona em `localhost` ou em HTTPS.
 
+## Publicar (Vercel + Supabase)
+
+1. No Supabase, crie um projeto (região São Paulo) e copie as duas conexões em **Connect › ORMs › Prisma**.
+2. Na Vercel, importe este repositório e cadastre as variáveis de ambiente: `DATABASE_URL`, `DIRECT_URL`, `ADMIN_EMAIL`, `ADMIN_NOME` e `ADMIN_SENHA` (veja `.env.example`).
+3. A cada publicação a Vercel roda `npm run vercel-build`: aplica as migrações no banco, cria o administrador inicial se ainda não houver nenhum usuário, e gera o site.
+4. Depois de entrar e trocar a senha, `ADMIN_SENHA` pode ser apagada da Vercel.
+
 ## Comandos
 
 - `npm test`: testes das regras de saldo e custo médio
