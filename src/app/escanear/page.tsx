@@ -1,7 +1,9 @@
+import { exigirUsuario } from "@/lib/auth";
 import { Titulo } from "@/components/ui";
 import { Leitor } from "./Leitor";
 
 export default async function Escanear({ searchParams }: PageProps<"/escanear">) {
+  await exigirUsuario();
   const { tipo } = await searchParams;
   return (
     <div>

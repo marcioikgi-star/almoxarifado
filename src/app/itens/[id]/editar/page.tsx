@@ -1,3 +1,4 @@
+import { exigirUsuario } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import { editarItem } from "@/app/actions";
 import { db } from "@/lib/db";
@@ -6,6 +7,7 @@ import { FormAcao } from "@/components/FormAcao";
 import { Titulo } from "@/components/ui";
 
 export default async function EditarItem({ params }: PageProps<"/itens/[id]/editar">) {
+  await exigirUsuario();
   const { id } = await params;
   const item = await db.item.findUnique({ where: { id } });
   if (!item) notFound();

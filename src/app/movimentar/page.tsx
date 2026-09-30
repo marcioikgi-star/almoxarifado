@@ -1,5 +1,5 @@
+import { exigirUsuario } from "@/lib/auth";
 import Link from "next/link";
-import { connection } from "next/server";
 import { movimentar } from "@/app/actions";
 import { db } from "@/lib/db";
 import { buscarItens } from "@/lib/consultas";
@@ -12,7 +12,7 @@ const TIPOS = ["ENTRADA", "SAIDA", "DEVOLUCAO", "AJUSTE"] as const;
 type Tipo = (typeof TIPOS)[number];
 
 export default async function Movimentar({ searchParams }: PageProps<"/movimentar">) {
-  await connection();
+  await exigirUsuario();
   const sp = await searchParams;
   const tipo: Tipo = TIPOS.includes(sp.tipo as Tipo) ? (sp.tipo as Tipo) : "ENTRADA";
   const itemId = typeof sp.item === "string" ? sp.item : null;

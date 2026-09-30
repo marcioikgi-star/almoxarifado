@@ -1,10 +1,10 @@
-import { connection } from "next/server";
+import { exigirUsuario } from "@/lib/auth";
 import { buscarItens, itensAbaixoDoMinimo } from "@/lib/consultas";
 import { BotaoLink, Titulo, Vazio } from "@/components/ui";
 import { LinhaItem } from "@/components/LinhaItem";
 
 export default async function Itens({ searchParams }: PageProps<"/itens">) {
-  await connection();
+  await exigirUsuario();
   const { q, baixo } = await searchParams;
   const termo = typeof q === "string" ? q : "";
   const soBaixos = baixo === "1";

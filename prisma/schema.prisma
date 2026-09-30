@@ -7,6 +7,39 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Papel {
+  ADMIN
+  ALMOXARIFE
+}
+
+model Usuario {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  nome             String
+  senhaHash        String
+  papel            Papel     @default(ALMOXARIFE)
+  // Obriga a trocar a senha no próximo acesso (senha inicial ou redefinida pelo administrador).
+  trocarSenha      Boolean   @default(true)
+  ativo            Boolean   @default(true)
+  tentativasFalhas Int       @default(0)
+  bloqueadoAte     DateTime?
+  criadoEm         DateTime  @default(now())
+
+  sessoes       Sessao[]
+  movimentacoes Movimentacao[]
+}
+
+model Sessao {
+  // Hash SHA-256 do token do cookie; o token em si nunca é gravado.
+  id        String   @id
+  usuarioId String
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  expiraEm  DateTime
+  criadoEm  DateTime @default(now())
+
+  @@index([usuarioId])
+}
+
 enum TipoMovimentacao {
   ENTRADA
   SAIDA
@@ -74,6 +107,9 @@ model Movimentacao {
   documento     String?
   responsavel   String?
   observacao    String?
+  // Quem registrou no sistema (pode ser diferente de quem retirou o material).
+  usuarioId     String?
+  usuario       Usuario?         @relation(fields: [usuarioId], references: [id])
   criadoEm      DateTime         @default(now())
 
   @@index([itemId, criadoEm])

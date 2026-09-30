@@ -1,3 +1,4 @@
+import { exigirUsuario } from "@/lib/auth";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
@@ -13,12 +14,13 @@ const avisos: Record<string, string> = {
 };
 
 export default async function DetalheItem({ params, searchParams }: PageProps<"/itens/[id]">) {
+  await exigirUsuario();
   const { id } = await params;
   const { ok } = await searchParams;
   const item = await db.item.findUnique({
     where: { id },
     include: {
-      movimentacoes: { orderBy: { criadoEm: "desc" }, take: 30, include: { projeto: true, fornecedor: true } },
+      movimentacoes: { orderBy: { criadoEm: "desc" }, take: 30, include: { projeto: true, fornecedor: true, usuario: { select: { nome: true } } } },
     },
   });
   if (!item) notFound();
@@ -115,6 +117,7 @@ export default async function DetalheItem({ params, searchParams }: PageProps<"/
                   {m.fornecedor ? ` · ${m.fornecedor.nome}` : ""}
                   {m.documento ? ` · doc. ${m.documento}` : ""}
                   {m.responsavel ? ` · ${m.responsavel}` : ""}
+                  {m.usuario ? ` · lançado por ${m.usuario.nome}` : ""}
                 </p>
                 {m.observacao && <p className="text-xs text-slate-600">{m.observacao}</p>}
               </li>

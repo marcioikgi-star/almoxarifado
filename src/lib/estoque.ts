@@ -12,6 +12,7 @@ export type NovaMovimentacao = {
   documento?: string | null;
   responsavel?: string | null;
   observacao?: string | null;
+  usuarioId?: string | null;
 };
 
 /** Grava a movimentação e atualiza saldo e custo médio do item na mesma transação. */
@@ -44,6 +45,7 @@ export async function registrarMovimentacao(m: NovaMovimentacao) {
         documento: m.documento || null,
         responsavel: m.responsavel || null,
         observacao: m.observacao || null,
+        usuarioId: m.usuarioId || null,
       },
     });
   });

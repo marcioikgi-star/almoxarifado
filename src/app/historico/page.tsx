@@ -1,12 +1,12 @@
+import { exigirUsuario } from "@/lib/auth";
 import Link from "next/link";
-import { connection } from "next/server";
 import type { Prisma, TipoMovimentacao } from "@prisma/client";
 import { db } from "@/lib/db";
 import { fmtBRL, fmtData, fmtQtd, nomeTipo } from "@/lib/formato";
 import { Cartao, Selecao, Titulo, Vazio } from "@/components/ui";
 
 export default async function Historico({ searchParams }: PageProps<"/historico">) {
-  await connection();
+  await exigirUsuario();
   const sp = await searchParams;
   const projetoId = typeof sp.projeto === "string" && sp.projeto ? sp.projeto : null;
   const tipo = typeof sp.tipo === "string" && sp.tipo in nomeTipo ? (sp.tipo as keyof typeof nomeTipo) : null;
@@ -21,7 +21,7 @@ export default async function Historico({ searchParams }: PageProps<"/historico"
       where,
       orderBy: { criadoEm: "desc" },
       take: 200,
-      include: { item: true, projeto: true, fornecedor: true },
+      include: { item: true, projeto: true, fornecedor: true, usuario: { select: { nome: true } } },
     }),
   ]);
 
@@ -81,6 +81,7 @@ export default async function Historico({ searchParams }: PageProps<"/historico"
                 {m.projeto ? ` · ${m.projeto.nome}` : ""}
                 {m.fornecedor ? ` · ${m.fornecedor.nome}` : ""}
                 {m.responsavel ? ` · ${m.responsavel}` : ""}
+                  {m.usuario ? ` · lançado por ${m.usuario.nome}` : ""}
               </p>
             </li>
           ))}

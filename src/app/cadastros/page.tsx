@@ -1,11 +1,12 @@
-import { connection } from "next/server";
+import Link from "next/link";
+import { exigirUsuario } from "@/lib/auth";
 import { alternarProjeto, criarFornecedor, criarProjeto } from "@/app/actions";
 import { db } from "@/lib/db";
 import { FormAcao } from "@/components/FormAcao";
 import { Campo, Cartao, Titulo } from "@/components/ui";
 
 export default async function Cadastros() {
-  await connection();
+  const usuario = await exigirUsuario();
   const [projetos, fornecedores] = await Promise.all([
     db.projeto.findMany({ orderBy: [{ ativo: "desc" }, { nome: "asc" }] }),
     db.fornecedor.findMany({ orderBy: { nome: "asc" } }),
@@ -13,6 +14,11 @@ export default async function Cadastros() {
 
   return (
     <div className="space-y-8">
+      {usuario.papel === "ADMIN" && (
+        <Link href="/usuarios" className="block rounded-xl border border-slate-300 bg-white px-4 py-3 font-semibold">
+          Usuários e acessos ›
+        </Link>
+      )}
       <section>
         <Titulo>Projetos e obras</Titulo>
         <Cartao className="mb-3">

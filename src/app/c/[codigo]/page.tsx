@@ -1,9 +1,11 @@
+import { exigirUsuario } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { BotaoLink, Titulo } from "@/components/ui";
 
 /** Destino das etiquetas QR e do leitor: acha o item pelo código interno ou de barras. */
 export default async function PorCodigo({ params, searchParams }: PageProps<"/c/[codigo]">) {
+  await exigirUsuario();
   const codigo = decodeURIComponent((await params).codigo).trim();
   const { tipo } = await searchParams;
   const item = await db.item.findFirst({

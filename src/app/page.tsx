@@ -1,13 +1,14 @@
+import { exigirUsuario } from "@/lib/auth";
 import Link from "next/link";
-import { connection } from "next/server";
 import { db } from "@/lib/db";
 import { itensAbaixoDoMinimo } from "@/lib/consultas";
 import { fmtBRL, fmtData, fmtQtd, nomeTipo } from "@/lib/formato";
 import { BotaoLink, Cartao } from "@/components/ui";
 import { LinhaItem } from "@/components/LinhaItem";
 
-export default async function Inicio() {
-  await connection();
+export default async function Inicio({ searchParams }: PageProps<"/">) {
+  await exigirUsuario();
+  const { senha } = await searchParams;
   const [baixos, ultimas, totais] = await Promise.all([
     itensAbaixoDoMinimo(5),
     db.movimentacao.findMany({ orderBy: { criadoEm: "desc" }, take: 5, include: { item: true, projeto: true } }),
@@ -17,6 +18,11 @@ export default async function Inicio() {
 
   return (
     <div className="space-y-6">
+      {senha === "ok" && (
+        <p role="status" className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-800">
+          Senha alterada.
+        </p>
+      )}
       <form action="/itens" className="flex gap-2">
         <input
           name="q"

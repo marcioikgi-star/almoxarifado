@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { registrarMovimentacao } from "@/lib/estoque";
 import { ErroEstoque } from "@/lib/calculo";
 import { lerNumero } from "@/lib/formato";
+import { exigirUsuario } from "@/lib/auth";
 
 export type EstadoForm = { erro?: string; ok?: string } | undefined;
 
@@ -44,6 +45,7 @@ function erroUnico(e: unknown) {
 }
 
 export async function criarItem(_: EstadoForm, f: FormData): Promise<EstadoForm> {
+  await exigirUsuario();
   const r = dadosItem(f);
   if ("erro" in r) return { erro: r.erro };
   let id: string;
@@ -57,6 +59,7 @@ export async function criarItem(_: EstadoForm, f: FormData): Promise<EstadoForm>
 }
 
 export async function editarItem(id: string, _: EstadoForm, f: FormData): Promise<EstadoForm> {
+  await exigirUsuario();
   const r = dadosItem(f);
   if ("erro" in r) return { erro: r.erro };
   try {
@@ -71,6 +74,7 @@ export async function editarItem(id: string, _: EstadoForm, f: FormData): Promis
 const TIPOS = Object.values(TipoMovimentacao) as string[];
 
 export async function movimentar(_: EstadoForm, f: FormData): Promise<EstadoForm> {
+  const usuario = await exigirUsuario();
   const itemId = texto(f, "itemId");
   const tipo = texto(f, "tipo");
   const quantidade = lerNumero(f.get("quantidade"));
@@ -91,6 +95,7 @@ export async function movimentar(_: EstadoForm, f: FormData): Promise<EstadoForm
       documento: texto(f, "documento"),
       responsavel: texto(f, "responsavel"),
       observacao: texto(f, "observacao"),
+      usuarioId: usuario.id,
     });
   } catch (e) {
     if (e instanceof ErroEstoque) return { erro: e.message };
@@ -101,6 +106,7 @@ export async function movimentar(_: EstadoForm, f: FormData): Promise<EstadoForm
 }
 
 export async function criarProjeto(_: EstadoForm, f: FormData): Promise<EstadoForm> {
+  await exigirUsuario();
   const nome = texto(f, "nome");
   if (!nome) return { erro: "Informe o nome do projeto." };
   await db.projeto.create({ data: { nome, cliente: texto(f, "cliente") } });
@@ -109,6 +115,7 @@ export async function criarProjeto(_: EstadoForm, f: FormData): Promise<EstadoFo
 }
 
 export async function criarFornecedor(_: EstadoForm, f: FormData): Promise<EstadoForm> {
+  await exigirUsuario();
   const nome = texto(f, "nome");
   if (!nome) return { erro: "Informe o nome do fornecedor." };
   try {
@@ -124,6 +131,7 @@ export async function criarFornecedor(_: EstadoForm, f: FormData): Promise<Estad
 }
 
 export async function alternarProjeto(id: string, ativo: boolean) {
+  await exigirUsuario();
   await db.projeto.update({ where: { id }, data: { ativo } });
   revalidatePath("/cadastros");
 }

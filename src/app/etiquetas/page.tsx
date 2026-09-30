@@ -1,4 +1,4 @@
-import { connection } from "next/server";
+import { exigirUsuario } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { filtroBusca } from "@/lib/consultas";
 import { qrSvg, urlEtiqueta } from "@/lib/qr";
@@ -6,7 +6,7 @@ import { Titulo, Vazio } from "@/components/ui";
 import { BotaoImprimir } from "./BotaoImprimir";
 
 export default async function Etiquetas({ searchParams }: PageProps<"/etiquetas">) {
-  await connection();
+  await exigirUsuario();
   const sp = await searchParams;
   const itemId = typeof sp.item === "string" ? sp.item : null;
   const q = typeof sp.q === "string" ? sp.q : "";
